@@ -22,7 +22,7 @@ func main() {
 		log.Fatalf("Failed to create repos dir: %v", err)
 	}
 
-	// Initialize database
+	// Initialize database (Turso if TURSO_DATABASE_URL set, otherwise local SQLite)
 	dbPath := cfg.DataDir + "/gitserv.db"
 	db, err := database.Open(dbPath)
 	if err != nil {
