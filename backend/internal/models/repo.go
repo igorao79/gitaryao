@@ -118,6 +118,29 @@ func (s *RepoStore) ListPublic() ([]Repository, error) {
 	return repos, rows.Err()
 }
 
+// ListPublicByUsername returns all public repositories for a user by username.
+func (s *RepoStore) ListPublicByUsername(username string) ([]Repository, error) {
+	rows, err := s.DB.Query(
+		`SELECT r.id, r.owner_id, u.username, r.name, r.description, r.is_private, r.default_branch, r.created_at, r.updated_at
+		 FROM repositories r JOIN users u ON r.owner_id = u.id
+		 WHERE u.username = ? AND r.is_private = FALSE ORDER BY r.updated_at DESC`, username,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("list user public repos: %w", err)
+	}
+	defer rows.Close()
+
+	var repos []Repository
+	for rows.Next() {
+		var r Repository
+		if err := rows.Scan(&r.ID, &r.OwnerID, &r.OwnerName, &r.Name, &r.Description, &r.IsPrivate, &r.DefaultBranch, &r.CreatedAt, &r.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan repo: %w", err)
+		}
+		repos = append(repos, r)
+	}
+	return repos, rows.Err()
+}
+
 // Delete removes a repository record.
 func (s *RepoStore) Delete(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM repositories WHERE id = ?`, id)

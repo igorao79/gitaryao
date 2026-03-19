@@ -59,6 +59,10 @@ export function getGoogleLoginURL(): string {
   return `${API_URL}/auth/google`;
 }
 
+export function getCloneURL(owner: string, repo: string): string {
+  return `${API_URL}/${owner}/${repo}.git`;
+}
+
 export function getCurrentUser(): Promise<User> {
   return fetchAPI<User>("/api/user");
 }
@@ -83,6 +87,10 @@ export function listMyRepos(): Promise<Repository[]> {
 
 export function listPublicRepos(): Promise<Repository[]> {
   return fetchAPI<Repository[]>("/api/repos/public");
+}
+
+export function listUserRepos(username: string): Promise<Repository[]> {
+  return fetchAPI<Repository[]>(`/api/users/${username}/repos`);
 }
 
 export function createRepo(data: {

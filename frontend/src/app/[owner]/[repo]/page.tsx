@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
-import { getRepoTree, getRepoBranches, type TreeEntry, type BranchInfo } from "@/lib/api";
+import { getRepoTree, getRepoBranches, getCloneURL, type TreeEntry, type BranchInfo } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,7 +62,7 @@ export default function RepoPage() {
     load();
   }, [owner, repo, defaultBranch]);
 
-  const cloneURL = `http://localhost:8080/${owner}/${repo}.git`;
+  const cloneURL = getCloneURL(owner, repo);
 
   const copyCloneURL = () => {
     navigator.clipboard.writeText(cloneURL);

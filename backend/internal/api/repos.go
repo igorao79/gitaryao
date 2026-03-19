@@ -8,6 +8,8 @@ import (
 	"gitserv/internal/auth"
 	"gitserv/internal/gitops"
 	"gitserv/internal/models"
+
+	"github.com/go-chi/chi/v5"
 )
 
 var validNameRe = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]+$`)
@@ -76,6 +78,27 @@ func (s *Server) ListMyRepos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	repos, err := s.Repos.ListByOwnerID(claims.UserID)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "Failed to list repos"})
+		return
+	}
+
+	if repos == nil {
+		repos = []models.Repository{}
+	}
+
+	writeJSON(w, http.StatusOK, repos)
+}
+
+// ListUserRepos handles GET /api/users/{username}/repos (public repos of a user)
+func (s *Server) ListUserRepos(w http.ResponseWriter, r *http.Request) {
+	username := chi.URLParam(r, "username")
+	if username == "" {
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "Username is required"})
+		return
+	}
+
+	repos, err := s.Repos.ListPublicByUsername(username)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "Failed to list repos"})
 		return

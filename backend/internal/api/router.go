@@ -66,6 +66,9 @@ func NewRouter(cfg *config.Config, db *sql.DB, jwtMgr *auth.JWTManager, oauthHan
 		// Public endpoints
 		r.Get("/repos/public", srv.ListPublicRepos)
 
+		// User repos (public)
+		r.Get("/users/{username}/repos", srv.ListUserRepos)
+
 		// Repository browsing (public, no auth required)
 		r.Get("/repos/{owner}/{name}/tree/{ref}", srv.GetTree)
 		r.Get("/repos/{owner}/{name}/tree/{ref}/*", srv.GetTree)
