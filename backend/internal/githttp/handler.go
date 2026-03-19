@@ -12,10 +12,16 @@ import (
 	"strings"
 )
 
+// ArchiveBackuper is the interface for backing up repos after push.
+type ArchiveBackuper interface {
+	BackupByOwnerAndName(owner, name string) error
+}
+
 // Handler implements Git Smart HTTP protocol.
 // It delegates to git-upload-pack and git-receive-pack binaries.
 type Handler struct {
 	ReposDir string
+	Archiver ArchiveBackuper
 }
 
 // NewHandler creates a new Git Smart HTTP handler.
@@ -66,6 +72,31 @@ func (h *Handler) UploadPack(w http.ResponseWriter, r *http.Request) {
 // ReceivePack handles POST /{owner}/{repo}.git/git-receive-pack (push)
 func (h *Handler) ReceivePack(w http.ResponseWriter, r *http.Request) {
 	h.serviceRPC(w, r, "receive-pack")
+
+	// After successful push, backup the repo to the database
+	if h.Archiver != nil {
+		owner, repoName := h.extractOwnerRepo(r)
+		if owner != "" && repoName != "" {
+			go func() {
+				if err := h.Archiver.BackupByOwnerAndName(owner, repoName); err != nil {
+					fmt.Fprintf(os.Stderr, "backup error: %v\n", err)
+				}
+			}()
+		}
+	}
+}
+
+// extractOwnerRepo parses owner and repo name from the request path.
+func (h *Handler) extractOwnerRepo(r *http.Request) (string, string) {
+	path := r.URL.Path
+	parts := strings.Split(strings.Trim(path, "/"), "/")
+	if len(parts) < 2 {
+		return "", ""
+	}
+	owner := parts[0]
+	repoWithGit := parts[1]
+	name := strings.TrimSuffix(repoWithGit, ".git")
+	return owner, name
 }
 
 func (h *Handler) serviceRPC(w http.ResponseWriter, r *http.Request, service string) {

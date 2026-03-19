@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"gitserv/internal/api"
+	"gitserv/internal/archive"
 	"gitserv/internal/auth"
 	"gitserv/internal/config"
 	"gitserv/internal/database"
@@ -34,6 +35,12 @@ func main() {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
+	// Restore repos from database (for ephemeral filesystems like Render)
+	archiver := archive.NewManager(db, reposDir)
+	if err := archiver.RestoreAll(); err != nil {
+		fmt.Printf("Warning: restore repos: %v\n", err)
+	}
+
 	// JWT manager
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
@@ -53,7 +60,7 @@ func main() {
 	oauthHandler := auth.NewOAuthHandler(providers, jwtMgr, userStore, cfg.FrontendURL)
 
 	// Build router
-	router := api.NewRouter(cfg, db, jwtMgr, oauthHandler)
+	router := api.NewRouter(cfg, db, jwtMgr, oauthHandler, archiver)
 
 	fmt.Printf("GitServ starting on %s\n", cfg.ListenAddr)
 	fmt.Printf("  Data dir:     %s\n", cfg.DataDir)

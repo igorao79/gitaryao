@@ -21,10 +21,11 @@ type Server struct {
 	Users    *models.UserStore
 	Repos    *models.RepoStore
 	JWT      *auth.JWTManager
+	Archiver githttp.ArchiveBackuper
 }
 
 // NewRouter creates the main HTTP router with all routes mounted.
-func NewRouter(cfg *config.Config, db *sql.DB, jwtMgr *auth.JWTManager, oauthHandler *auth.OAuthHandler) *chi.Mux {
+func NewRouter(cfg *config.Config, db *sql.DB, jwtMgr *auth.JWTManager, oauthHandler *auth.OAuthHandler, archiver githttp.ArchiveBackuper) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Middleware
@@ -47,8 +48,10 @@ func NewRouter(cfg *config.Config, db *sql.DB, jwtMgr *auth.JWTManager, oauthHan
 		Users:    &models.UserStore{DB: db},
 		Repos:    &models.RepoStore{DB: db},
 		JWT:      jwtMgr,
+		Archiver: archiver,
 	}
 	gitHandler := githttp.NewHandler(reposDir)
+	gitHandler.Archiver = archiver
 
 	// OAuth routes (no auth needed)
 	r.Route("/auth", func(r chi.Router) {

@@ -66,6 +66,11 @@ func (s *Server) CreateRepo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Backup the new bare repo to the database
+	if s.Archiver != nil {
+		go s.Archiver.BackupByOwnerAndName(owner, req.Name)
+	}
+
 	writeJSON(w, http.StatusCreated, repo)
 }
 

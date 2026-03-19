@@ -35,4 +35,10 @@ CREATE TABLE IF NOT EXISTS ssh_keys (
 
 CREATE INDEX IF NOT EXISTS idx_repositories_owner ON repositories(owner_id);
 CREATE INDEX IF NOT EXISTS idx_ssh_keys_user ON ssh_keys(user_id);
+
+CREATE TABLE IF NOT EXISTS repo_archives (
+    repo_id     INTEGER PRIMARY KEY REFERENCES repositories(id) ON DELETE CASCADE,
+    data        BLOB    NOT NULL,
+    updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 `
