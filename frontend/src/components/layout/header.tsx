@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { getGithubLoginURL, getGoogleLoginURL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { GitBranch, Plus, LogOut, Settings, User, ChevronDown } from "lucide-react";
@@ -29,7 +28,7 @@ export function Header() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 font-bold text-lg">
             <GitBranch className="size-5" />
-            GitServ
+            GitaryAO
           </Link>
           {user && (
             <nav className="flex items-center gap-4 text-sm">
@@ -101,14 +100,9 @@ export function Header() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2">
-              <a href={getGithubLoginURL()}>
-                <Button variant="outline" size="sm">Sign in with GitHub</Button>
-              </a>
-              <a href={getGoogleLoginURL()}>
-                <Button variant="outline" size="sm">Sign in with Google</Button>
-              </a>
-            </div>
+            <Link href="/login">
+              <Button size="lg" className="cursor-pointer">Sign in</Button>
+            </Link>
           )}
         </div>
       </div>

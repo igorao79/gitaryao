@@ -2,9 +2,9 @@
 
 import { Header } from "@/components/layout/header";
 import { useAuth } from "@/hooks/use-auth";
-import { getGithubLoginURL, getGoogleLoginURL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { GitBranch, Github, Globe } from "lucide-react";
+import { GitBranch } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -26,27 +26,18 @@ export default function Home() {
           <div className="flex items-center justify-center size-16 rounded-2xl bg-primary text-primary-foreground">
             <GitBranch className="size-8" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">GitServ</h1>
+          <h1 className="text-4xl font-bold tracking-tight">GitaryAO</h1>
           <p className="max-w-md text-lg text-muted-foreground">
             Self-hosted Git service. Push, clone, and manage your repositories.
           </p>
         </div>
 
         {!loading && !user && (
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <a href={getGithubLoginURL()}>
-              <Button size="lg" className="gap-2 w-full sm:w-auto">
-                <Github className="size-5" />
-                Sign in with GitHub
-              </Button>
-            </a>
-            <a href={getGoogleLoginURL()}>
-              <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
-                <Globe className="size-5" />
-                Sign in with Google
-              </Button>
-            </a>
-          </div>
+          <Link href="/login">
+            <Button size="lg" className="cursor-pointer text-base px-8 py-3 h-12">
+              Sign in
+            </Button>
+          </Link>
         )}
       </main>
     </>

@@ -62,7 +62,7 @@ func main() {
 	// Build router
 	router := api.NewRouter(cfg, db, jwtMgr, oauthHandler, archiver)
 
-	fmt.Printf("GitServ starting on %s\n", cfg.ListenAddr)
+	fmt.Printf("GitaryAO starting on %s\n", cfg.ListenAddr)
 	fmt.Printf("  Data dir:     %s\n", cfg.DataDir)
 	fmt.Printf("  Database:     %s\n", dbPath)
 	fmt.Printf("  Frontend URL: %s\n", cfg.FrontendURL)

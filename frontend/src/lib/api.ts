@@ -2,15 +2,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("gitserv_token");
+  return localStorage.getItem("gitaryao_token");
 }
 
 export function setToken(token: string) {
-  localStorage.setItem("gitserv_token", token);
+  localStorage.setItem("gitaryao_token", token);
 }
 
 export function removeToken() {
-  localStorage.removeItem("gitserv_token");
+  localStorage.removeItem("gitaryao_token");
 }
 
 export function isAuthenticated(): boolean {
