@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { listMyRepos, type Repository } from "@/lib/api";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, GitBranch, Lock, Globe } from "lucide-react";
@@ -57,12 +57,14 @@ export default function Dashboard() {
             ))}
           </div>
         ) : repos.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-4 py-12">
-              <GitBranch className="size-12 text-muted-foreground" />
+          <Card className="border-dashed">
+            <div className="flex flex-col items-center gap-4 py-16">
+              <div className="flex items-center justify-center size-16 rounded-2xl bg-neutral-800">
+                <GitBranch className="size-8 text-neutral-400" />
+              </div>
               <div className="text-center">
                 <h3 className="font-semibold text-lg">No repositories yet</h3>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-neutral-400 mt-1">
                   Create your first repository to get started.
                 </p>
               </div>
@@ -72,19 +74,19 @@ export default function Dashboard() {
                   Create repository
                 </Button>
               </Link>
-            </CardContent>
+            </div>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {repos.map((repo) => (
               <Link key={repo.id} href={`/${repo.owner_name}/${repo.name}`}>
-                <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+                <Card className="hover:border-violet-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/5">
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base">
-                        <span className="text-muted-foreground">{repo.owner_name}</span>
-                        <span className="text-muted-foreground mx-1">/</span>
-                        <span className="text-foreground">{repo.name}</span>
+                        <span className="text-neutral-400">{repo.owner_name}</span>
+                        <span className="text-neutral-600 mx-1">/</span>
+                        <span className="text-foreground font-semibold">{repo.name}</span>
                       </CardTitle>
                       <Badge variant={repo.is_private ? "secondary" : "outline"}>
                         {repo.is_private ? (

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
-import { getRepoTree, getRepoBranches, getCloneURL, type TreeEntry, type BranchInfo } from "@/lib/api";
+import { getRepoTree, getRepoBranches, getRepoCommits, getCloneURL, type TreeEntry, type BranchInfo } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +36,7 @@ export default function RepoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [defaultBranch, setDefaultBranch] = useState("master");
+  const [commitCount, setCommitCount] = useState<number | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -44,15 +45,25 @@ export default function RepoPage() {
           getRepoBranches(owner, repo),
         ]);
 
+        let branch = "master";
         if (branchList.status === "fulfilled") {
           setBranches(branchList.value);
           const def = branchList.value.find((b) => b.is_default);
-          if (def) setDefaultBranch(def.name);
+          if (def) {
+            branch = def.name;
+            setDefaultBranch(def.name);
+          }
         }
 
-        const ref = defaultBranch;
-        const treeData = await getRepoTree(owner, repo, ref);
-        setTree(treeData);
+        const [treeData, commits] = await Promise.allSettled([
+          getRepoTree(owner, repo, branch),
+          getRepoCommits(owner, repo, branch),
+        ]);
+
+        if (treeData.status === "fulfilled") setTree(treeData.value);
+        else setError(treeData.reason?.message || "Failed to load repository");
+
+        if (commits.status === "fulfilled") setCommitCount(commits.value.length);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to load repository");
       } finally {
@@ -60,7 +71,7 @@ export default function RepoPage() {
       }
     }
     load();
-  }, [owner, repo, defaultBranch]);
+  }, [owner, repo]);
 
   const cloneURL = getCloneURL(owner, repo);
 
@@ -69,17 +80,21 @@ export default function RepoPage() {
     toast.success("Copied to clipboard!");
   };
 
-  // Sort: directories first, then files
   const sortedTree = [...tree].sort((a, b) => {
     if (a.type === b.type) return a.name.localeCompare(b.name);
     return a.type === "tree" ? -1 : 1;
   });
 
+  const commitBadge = commitCount !== null ? (
+    <span className="ml-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-neutral-800 text-xs font-medium text-neutral-300">
+      {commitCount}
+    </span>
+  ) : null;
+
   return (
     <>
       <Header />
       <main className="container mx-auto max-w-4xl px-4 py-8">
-        {/* Repo header */}
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-xl font-bold">
@@ -116,14 +131,12 @@ export default function RepoPage() {
           </Dialog>
         </div>
 
-        {/* Tabs */}
         <NavTabs tabs={[
           { label: "Code", href: `/${owner}/${repo}`, icon: <Code className="size-4" /> },
-          { label: "Commits", href: `/${owner}/${repo}/commits`, icon: <Clock className="size-4" /> },
+          { label: "Commits", href: `/${owner}/${repo}/commits`, icon: <Clock className="size-4" />, badge: commitBadge },
           { label: "Branches", href: `/${owner}/${repo}/branches`, icon: <GitBranch className="size-4" /> },
         ]} />
 
-        {/* File tree */}
         {loading ? (
           <Card>
             <CardContent className="p-0">
@@ -159,13 +172,22 @@ git push origin master`}
                   <TableRow key={entry.name} className="hover:bg-muted/50">
                     <TableCell className="w-8">
                       {entry.type === "tree" ? (
-                        <Folder className="size-4 text-blue-500" />
+                        <Folder className="size-4 text-blue-400" />
                       ) : (
-                        <File className="size-4 text-muted-foreground" />
+                        <File className="size-4 text-neutral-500" />
                       )}
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm">{entry.name}</span>
+                      {entry.type === "blob" ? (
+                        <Link
+                          href={`/${owner}/${repo}/blob/${defaultBranch}/${entry.name}`}
+                          className="text-sm hover:text-blue-400 hover:underline transition-colors"
+                        >
+                          {entry.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm">{entry.name}</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right text-xs text-muted-foreground">
                       {entry.type === "blob" && entry.size > 0 && formatSize(entry.size)}

@@ -25,6 +25,12 @@ export default function CommitsPage() {
       .finally(() => setLoading(false));
   }, [owner, repo]);
 
+  const commitBadge = !loading && commits.length > 0 ? (
+    <span className="ml-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-neutral-800 text-xs font-medium text-neutral-300">
+      {commits.length}
+    </span>
+  ) : null;
+
   return (
     <>
       <Header />
@@ -37,7 +43,7 @@ export default function CommitsPage() {
 
         <NavTabs tabs={[
           { label: "Code", href: `/${owner}/${repo}`, icon: <Code className="size-4" /> },
-          { label: "Commits", href: `/${owner}/${repo}/commits`, icon: <Clock className="size-4" /> },
+          { label: "Commits", href: `/${owner}/${repo}/commits`, icon: <Clock className="size-4" />, badge: commitBadge },
           { label: "Branches", href: `/${owner}/${repo}/branches`, icon: <GitBranch className="size-4" /> },
         ]} />
 
@@ -61,7 +67,7 @@ export default function CommitsPage() {
         ) : (
           <div className="space-y-2">
             {commits.map((commit) => (
-              <Card key={commit.hash}>
+              <Card key={commit.hash} className="hover:border-neutral-700 transition-colors">
                 <CardContent className="flex items-start gap-3 py-4">
                   <GitCommit className="size-5 text-muted-foreground mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -70,7 +76,7 @@ export default function CommitsPage() {
                       {commit.author} committed {new Date(commit.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <code className="text-xs bg-muted rounded px-2 py-1 font-mono shrink-0">
+                  <code className="text-xs bg-neutral-800 rounded px-2 py-1 font-mono shrink-0 text-neutral-300">
                     {commit.hash.substring(0, 7)}
                   </code>
                 </CardContent>
